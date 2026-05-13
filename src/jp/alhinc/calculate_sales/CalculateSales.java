@@ -23,6 +23,10 @@ public class CalculateSales {
     private static final String UNKNOWN_ERROR = "予期せぬエラーが発生しました";
     private static final String FILE_NOT_EXIST = "支店定義ファイルが存在しません";
     private static final String FILE_INVALID_FORMAT = "支店定義ファイルのフォーマットが不正です";
+    private static final String FILE_NAME_ERROR = "売上ファイル名が連番になっていません";
+    private static final String SALES_AMOUNT_DIGIT_ERROR = "合計⾦額が10桁を超えました";
+    private static final String SALES_CODE_NOT_EXIST = "の⽀店コードが不正です";
+    private static final String SALES_FILE_INVALID_FORMAT= "のフォーマットが不正です";
 
     /**
      * メインメソッド
@@ -35,6 +39,11 @@ public class CalculateSales {
         // 支店コードと売上金額を保持するMap
         Map<String, Long> branchSales = new HashMap<>();
 
+        //コマンドライン引数チェック
+        if (args.length != 1) {
+            System.out.println(UNKNOWN_ERROR);
+            return;
+        }
         // 支店定義ファイル読み込み処理
         if (!readFile(args[0], FILE_NAME_BRANCH_LST, branchNames, branchSales)) {
             return;
@@ -46,8 +55,20 @@ public class CalculateSales {
         List<File> rcdFiles = new ArrayList<>();
 
         for (int i = 0; i < files.length; i++) {
-            if (files[i].getName().matches("^[0-9]{8}.rcd$")) {
+            if (files[i].isFile() && files[i].getName().matches("^[0-9]{8}.rcd$")) {
                 rcdFiles.add(files[i]);
+            }
+        }
+
+        //売上ファイルの連番チェック
+        for (int i = 0; i < rcdFiles.size() - 1; i++) {
+
+            int former = Integer.parseInt(rcdFiles.get(i).getName().substring(0, 8));
+            int latter = Integer.parseInt(rcdFiles.get(i + 1).getName().substring(0, 8));
+
+            if ((latter - former) != 1) {
+                System.out.println(FILE_NAME_ERROR);
+                return;
             }
         }
 
@@ -67,11 +88,34 @@ public class CalculateSales {
                     fileSales.add(line);
                 }
 
-                Long fileSale = Long.parseLong(fileSales.get(1));
+                //売上ファイルのフォーマットチェック
+                if(fileSales.size() != 2) {
+                    System.out.println(rcdFiles.get(i).getName() +SALES_FILE_INVALID_FORMAT);
+                    return;
+                }
 
+                //売上ファイルの支店コードが支店定義ファイルに存在しているかチェック
+                if (!branchNames.containsKey(fileSales.get(0))) {
+                    System.out.println(fileSales.get(0) +SALES_CODE_NOT_EXIST);
+                    return;
+                }
+
+                //売上金額の数字チェック
+                if(!fileSales.get(1).matches("^[0-9]*$")) {
+                    System.out.println(UNKNOWN_ERROR);
+                    return;
+                }
+
+                Long fileSale = Long.parseLong(fileSales.get(1));
                 Long saleAmount = branchSales.get(fileSales.get(0)) + fileSale;
 
-                //加算した売上⾦額をMapに追加します。
+                //売上金額の桁数チェック
+                if (saleAmount >= 10000000000L) {
+                    System.out.println(SALES_AMOUNT_DIGIT_ERROR);
+                    return;
+                }
+
+                //加算した売上⾦額をMapに追加
                 branchSales.put(fileSales.get(0), saleAmount);
 
             } catch (IOException e) {
@@ -111,14 +155,28 @@ public class CalculateSales {
 
         try {
             File file = new File(path, fileName);
+            //ファイルの存在チェック
+            if (!file.exists()) {
+                System.out.println(FILE_NOT_EXIST);
+                return false;
+            }
+
             FileReader fr = new FileReader(file);
             br = new BufferedReader(fr);
 
             String line;
             // 一行ずつ読み込む
             while ((line = br.readLine()) != null) {
+
                 // ※ここの読み込み処理を変更してください。(処理内容1-2)
                 String[] items = line.split(",");
+
+                //支店ファイルのフォーマットチェック
+                if ((items.length != 2) || (!items[0].matches("^[0-9]{3}$"))) {
+                    System.out.println(FILE_INVALID_FORMAT);
+                    return false;
+                }
+
                 branchNames.put(items[0], items[1]);
                 branchSales.put(items[0], 0L);
             }
