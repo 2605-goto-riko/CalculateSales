@@ -27,7 +27,7 @@ public class CalculateSales {
     private static final String FILE_NAME_ERROR = "売上ファイル名が連番になっていません";
     private static final String SALES_AMOUNT_DIGIT_ERROR = "合計⾦額が10桁を超えました";
     private static final String SALES_CODE_NOT_EXIST = "の⽀店コードが不正です";
-    private static final String SALES_FILE_INVALID_FORMAT= "のフォーマットが不正です";
+    private static final String SALES_FILE_INVALID_FORMAT = "のフォーマットが不正です";
 
     /**
      * メインメソッド
