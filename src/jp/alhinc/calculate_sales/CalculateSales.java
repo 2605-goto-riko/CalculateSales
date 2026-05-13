@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,8 +61,10 @@ public class CalculateSales {
             }
         }
 
+        //売上ファイルのソート
+        Collections.sort(rcdFiles);
         //売上ファイルの連番チェック
-        for (int i = 0; i < rcdFiles.size() - 1; i++) {
+        for (int i = 0; i < rcdFiles.size() -1; i++) {
 
             int former = Integer.parseInt(rcdFiles.get(i).getName().substring(0, 8));
             int latter = Integer.parseInt(rcdFiles.get(i + 1).getName().substring(0, 8));
@@ -90,13 +93,13 @@ public class CalculateSales {
 
                 //売上ファイルのフォーマットチェック
                 if(fileSales.size() != 2) {
-                    System.out.println(rcdFiles.get(i).getName() +SALES_FILE_INVALID_FORMAT);
+                    System.out.println(rcdFiles.get(i).getName() + SALES_FILE_INVALID_FORMAT);
                     return;
                 }
 
                 //売上ファイルの支店コードが支店定義ファイルに存在しているかチェック
                 if (!branchNames.containsKey(fileSales.get(0))) {
-                    System.out.println(fileSales.get(0) +SALES_CODE_NOT_EXIST);
+                    System.out.println(fileSales.get(0) + SALES_CODE_NOT_EXIST);
                     return;
                 }
 
@@ -120,6 +123,7 @@ public class CalculateSales {
 
             } catch (IOException e) {
                 System.out.println(UNKNOWN_ERROR);
+                return;
             } finally {
                 // ファイルを開いている場合
                 if (br != null) {
@@ -128,6 +132,7 @@ public class CalculateSales {
                         br.close();
                     } catch (IOException e) {
                         System.out.println(UNKNOWN_ERROR);
+                        return;
                     }
                 }
             }
@@ -137,8 +142,8 @@ public class CalculateSales {
         if (!writeFile(args[0], FILE_NAME_BRANCH_OUT, branchNames, branchSales)) {
             return;
         }
-
     }
+
 
     /**
      * 支店定義ファイル読み込み処理
@@ -199,6 +204,7 @@ public class CalculateSales {
         return true;
     }
 
+
     /**
      * 支店別集計ファイル書き込み処理
      *
@@ -219,11 +225,7 @@ public class CalculateSales {
             bw = new BufferedWriter(fw);
 
             for (String key : branchNames.keySet()) {
-                bw.write(key);
-                bw.write(",");
-                bw.write(branchNames.get(key));
-                bw.write(",");
-                bw.write(Long.toString(branchSales.get(key)));
+                bw.write(key + "," + branchNames.get(key) + "," + Long.toString(branchSales.get(key)));
                 bw.newLine();
             }
         } catch (IOException e) {
