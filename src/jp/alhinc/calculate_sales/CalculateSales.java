@@ -123,7 +123,7 @@ public class CalculateSales {
 
                 //売上ファイルの支店コードが支店定義ファイルに存在しているかチェック
                 if (!branchNames.containsKey(fileSales.get(0))) {
-                    System.out.println(rcdFiles.get(i).getName()  + SALES_CODE_NOT_EXIST);
+                    System.out.println(rcdFiles.get(i).getName() + SALES_CODE_NOT_EXIST);
                     return;
                 }
 
@@ -147,7 +147,7 @@ public class CalculateSales {
                 Long commoditySaleAmount = commoditySales.get(fileSales.get(1)) + commoditySale;
 
                 //売上金額の桁数チェック
-                if (branthSaleAmount >= 10000000000L  || commoditySaleAmount >= 10000000000L) {
+                if (branthSaleAmount >= 10000000000L || commoditySaleAmount >= 10000000000L) {
                     System.out.println(SALES_AMOUNT_DIGIT_ERROR);
                     return;
                 }
